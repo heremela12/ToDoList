@@ -1,13 +1,46 @@
-<!Doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title> ToDoList</title>
-    </head>
-    <body>
-        <h1>My ToDo List </h1>
+<!-- views/index.ejs -->
 
-        <div class="container"></div>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <p>This is a simple Todo List App, to get started please click on the plus button to add new tasks!</p>
+    <button id="bottomCornerButton" type="button" onclick="togglePopup()">+</button>
+    <!-- Popup container -->
+    <div id="popupBackground"></div>
+    <div id="popupContainer">
+        <form action="/todos" method="post" autocomplete="off">
+            <h3>Add new task!</h3>  
+            <input type="text" placeholder="Add a Task" name="addvalue" required>
+            <br>
+            <button class="btn2" type="submit">Add</button>
+            <button id="closeButton" type="button" onclick="togglePopup()">x</button>
+        </form>
+    </div>
+    <% if (typeof todos !== 'undefined') { %>
+        <ul>
+          <% todos.forEach(todo => { %>
+            <li><%= todo.title %></li>
+          <% }); %>
+        </ul>
+      <% } %>
+      
+    <script>
+        function togglePopup() {
+            var popupContainer = document.getElementById("popupContainer");
+            var popupBackground = document.getElementById("popupBackground");
+    
+            // Toggle the visibility of the popup
+            popupContainer.style.display = popupContainer.style.display === "block" ? "none" : "block";
+            popupBackground.style.display = popupBackground.style.display === "block" ? "none" : "block";
+        }
+    </script>
+    
+</body>
 </html>
