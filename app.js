@@ -3,7 +3,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const bodyParser = require("body-parser");
 
 const app = express();
-
+const PORT = process.env.PORT || 3000;
 app.set("view engine", "ejs"); // Set EJS as the view engine
 app.use(express.static("public"));
 app.use(express.json());
@@ -115,7 +115,7 @@ async function run() {
     });
 
     //////////////////////////////////////////////////////////////////////////////////////
-    app.listen(3000, () => {
+    app.listen(PORT, () => {
       console.log("Server is running on port 3000");
     });
   } finally {
