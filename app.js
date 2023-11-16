@@ -1,19 +1,17 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const ejs = require("ejs");
-const Todo = require("./models/todo");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const bodyParser = require("body-parser");
 
 const app = express();
 
 app.set("view engine", "ejs"); // Set EJS as the view engine
 app.use(express.static("public"));
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri =
-  "mongodb+srv://heremela:hermela1234@todo.ztqxvqe.mongodb.net/Todo?retryWrites=true&w=majority"; // Note the Todo in the connection string
+  "mongodb+srv://heremela:hermela1234@todo.ztqxvqe.mongodb.net/Todo?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -26,44 +24,102 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-  } finally {
-    // Ensure that the client will close when you finish/error
-    await client.close();
-  }
-}
-/*connect the db to the form in index.ejs*/
-app.get("/", async (req, res) => {
-  const todos = await Todo.find();
-  res.render("index", { todos });
-});
 
-app.post("/todos", async (req, res) => {
-  const { title } = req.body;
+    // Route to render the form
+    app.get("/", async (req, res) => {
+      try {
+        // Fetch all todos from the database
+        const todos = await client
+          .db("Todo")
+          .collection("todos")
+          .find()
+          .toArray();
 
-  try {
-    await Todo.create({ title });
-    const todos = await Todo.find();
-    res.render("index", { todos });
-  } catch (error) {
-    console.error("Error creating todo:", error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+        // Filter out todos with a specific title
+        const filteredTodos = todos.filter(
+          (todo) => todo.title !== req.body.title
+        );
 
-////////////////////////////////////////////////////////////////////////////////////////////
+        // Render the index page with the filtered todos
+        res.render("index", { todos: filteredTodos });
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
 
-run()
-  .then(() => {
-    // Start the Express app only after the connection and population are done
+    // Route to handle form submission
+    app.post("/submit-form", async (req, res) => {
+      const title = req.body.title;
+      const newTodo = { title: title };
+
+      try {
+        // Check if a todo with the same title already exists
+        const existingTodo = await client
+          .db("Todo")
+          .collection("todos")
+          .findOne({ title: newTodo.title });
+
+        if (!existingTodo) {
+          // If no existing todo, insert the new todo
+          await client.db("Todo").collection("todos").insertOne(newTodo);
+          console.log("New todo saved:", newTodo);
+        } else {
+          console.log(
+            `Todo with title '${newTodo.title}' already exists. Skipping insertion.`
+          );
+        }
+
+        // Fetch all todos (including the newly inserted one, if any)
+        const todos = await client
+          .db("Todo")
+          .collection("todos")
+          .find()
+          .toArray();
+
+        res.render("index", { todos: todos }); // Redirect to the home page after form submission
+      } catch (error) {
+        console.error("Error saving todo:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    //Route to handle task deletion
+    app.post("/deleteTodo", async (req, res) => {
+      const todoId = req.body.todoId;
+
+      try {
+        // Use MongoDB's deleteOne method to remove the todo with the given ID
+        const result = await client
+          .db("Todo")
+          .collection("todos")
+          .deleteOne({ _id: new ObjectId(todoId) });
+
+        if (result.deletedCount === 1) {
+          console.log("Todo item deleted successfully");
+        } else {
+          console.log(`Todo item with ID ${todoId} not found`);
+        }
+
+        // Redirect to the home page after deletion
+        res.redirect("/"); // Redirect to the home page
+      } catch (error) {
+        console.error("Error deleting todo:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    //////////////////////////////////////////////////////////////////////////////////////
     app.listen(3000, () => {
       console.log("Server is running on port 3000");
     });
-  })
-  .catch(console.dir);
+  } finally {
+  }
+}
+
+run().catch(console.dir);

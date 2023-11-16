@@ -6,6 +6,7 @@ const todoSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    index: true, // Index the 'title' field
   },
 });
 

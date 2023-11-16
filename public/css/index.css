@@ -3,14 +3,14 @@ body{
     background-color: #dfd3d3;
 }
 h1{
-    font-size: 38px;
+    font-size: 42px;
     text-align: center;
     color: red;
     margin-top: 5%;
 }
 
 p {
-    font-size: 0.5 rem;
+    font-size: 20px;
     text-align: center;
 }
 #popupContainer {
@@ -81,3 +81,37 @@ form button {
     padding: 5px;
     font-size: 12px;
 }
+.list-cont {
+    background-color: #cec3c3;
+    display: flex;
+    width: 80%;
+    margin: 0 auto;
+}
+
+ul {
+    padding: 0;
+    margin-left: 20%;
+    width: 60%;
+    margin-top: 2rem;
+  }
+
+  li {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+  }
+
+  .delete-button {
+    background-color: #ff0000; /* You can choose your preferred color */
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  
