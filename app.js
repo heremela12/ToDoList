@@ -1,4 +1,5 @@
 const express = require("express");
+const session = require("express-session");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const bodyParser = require("body-parser");
 
@@ -9,6 +10,14 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.use(
+  session({
+    secret: "heremela1357",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 const uri =
   "mongodb+srv://heremela:hermela1234@todo.ztqxvqe.mongodb.net/Todo?retryWrites=true&w=majority";
@@ -29,9 +38,12 @@ async function run() {
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-
-    // Route to render the form
+    //route to start application
     app.get("/", async (req, res) => {
+      res.render("login");
+    });
+    // Route to render the form
+    app.get("/index", async (req, res) => {
       try {
         // Fetch all todos from the database
         const todos = await client
@@ -46,11 +58,21 @@ async function run() {
         );
 
         // Render the index page with the filtered todos
-        res.render("index", { todos: filteredTodos });
+        if (req.session.user) {
+          // Render the index page
+          res.render("index", { todos: filteredTodos });
+        } else {
+          // If not authenticated, redirect to the login page
+          res.redirect("/login");
+        }
       } catch (error) {
         console.error("Error fetching todos:", error);
         res.status(500).send("Internal Server Error");
       }
+    });
+    //route to render sign-up form
+    app.get("/signup", async (req, res) => {
+      res.render("signup");
     });
 
     // Route to handle form submission
@@ -111,6 +133,64 @@ async function run() {
       } catch (error) {
         console.error("Error deleting todo:", error);
         res.status(500).send("Internal Server Error");
+      }
+    });
+    //route to handle sign up requests
+    app.post("/signup-user", async (req, res) => {
+      const username = req.body.username;
+      const password = req.body.password;
+      const repassword = req.body.repassword;
+      const newuser = { username: username, password: password };
+
+      try {
+        const existinguser = await client
+          .db("Todo")
+          .collection("Users")
+          .findOne({ username: newuser.username });
+
+        if (!existinguser && password === repassword) {
+          // If no existing user, insert the new user
+          await client.db("Todo").collection("Users").insertOne(newuser);
+          console.log("New user saved:", newuser);
+          res.send({
+            success: true,
+            message: "User added successfully! Please go back and sign in!",
+          });
+        } else {
+          res
+            .status(400)
+            .send("User already exists or passwords do not match!");
+        }
+      } catch (error) {
+        console.error("Error adding user:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    // route to handle login requests
+    app.post("/login", async (req, res) => {
+      const username = req.body.username;
+      const password = req.body.password;
+      const user = { username: username, password: password };
+
+      try {
+        const existinguser = await client
+          .db("Todo")
+          .collection("Users")
+          .findOne({ username: user.username, password: user.password });
+
+        if (existinguser) {
+          // If the user exists, store user information in the session
+          req.session.user = existinguser;
+          console.log("Login successful");
+          return res.redirect("/index"); // Redirect to the index page after successful login
+        }
+
+        // If the user doesn't exist, handle the failed login attempt
+        return res.status(400).send("Failed login. Please try again!");
+      } catch (error) {
+        console.error("Error logging in:", error);
+        return res.status(500).send("Internal Server Error");
       }
     });
 

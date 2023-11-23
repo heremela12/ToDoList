@@ -40,7 +40,7 @@ p {
     position: fixed;
     bottom: 50px;
     right: 50px;
-    background-color: rgb(150, 17, 99); /* Nice color (green) */
+    background-color: #2196F3; 
     color: #fff;
     border: none;
     border-radius: 50%; /* Make it round */

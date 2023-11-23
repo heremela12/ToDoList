@@ -7,7 +7,7 @@
     <title>Todo List</title>
 </head>
 <body>
-    <h1>Todo List</h1>
+    <h1>Todo List 😊</h1>
     <p>This is a simple Todo List App, to get started please click on the plus button to add new tasks! <br> Click the check box to mark task as completed!</p>
     <button id="bottomCornerButton" type="button" onclick="togglePopup()">+</button>
     <!-- Popup container -->
@@ -26,7 +26,7 @@
         <ul>
           <% todos.forEach(todo => { %>
             <li id="mylink_<%= todo._id %>"><input type="checkbox" id="myCheckbox_<%= todo._id %>" name="myCheckbox" onchange="StrikeThrough('<%= todo._id %>')">
-                <%= todo.title %><button class="delete-button" onclick="deleteTodo('<%= todo._id %>'); window.location.href = '/';">Delete</button>
+                <%= todo.title %><button class="delete-button" onclick="deleteTodo('<%= todo._id %>'); window.location.href = '/index'; ">Delete</button>
             </li>
           <% }); %>
         </ul>
